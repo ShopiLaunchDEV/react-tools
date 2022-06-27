@@ -1,9 +1,104 @@
 import React, { useState, useCallback } from 'react';
 import { render } from 'react-dom';
 
-import {AppProvider, Page, Layout, Card, FormLayout, RangeSlider, Checkbox} from '@shopify/polaris';
+import {AppProvider,Page,Layout,Card,FormLayout,RangeSlider,Checkbox,Button,Icon} from '@shopify/polaris';
+import { DragHandleMinor, DeleteMajor, EditMajor } from "@shopify/polaris-icons";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import '@shopify/polaris//build/esm/styles.css';
 import './index.css';
+
+const ITEMS = [
+  {
+    id: "1",
+    title: "Example list item"
+  },
+  {
+    id: "2",
+    title: "Example list item"
+  },
+  {
+    id: "3",
+    title: "Example list item"
+  },
+  {
+    id: "4",
+    title: "Example list item"
+  },
+  {
+    id: "5",
+    title: "Example list item"
+  }
+];
+
+function ListItem(props) {
+  const { id, index, title } = props;
+
+  return (
+    <Draggable draggableId={id} index={index}>
+      {(provided, snapshot) => {
+        return (
+          <div
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            style={
+              snapshot.isDragging
+                ? { background: "#5c6ac4", color: "#ffffff", ...provided.draggableProps.style }
+                : provided.draggableProps.style
+            }
+          >
+            <div className='layer_item' id={id} {...provided.dragHandleProps}>
+              <span className='icon_drag'>
+                  <Icon source={DragHandleMinor}/>
+              </span>
+              {title}
+              <span className='icon_edit'>
+                <Icon source={EditMajor}/>
+              </span>
+              <span className='icon_del'>
+                <Icon source={DeleteMajor}/>
+              </span>
+            </div>
+          </div>
+        );
+      }}
+    </Draggable>
+  );
+}
+
+function Lists() {
+  const [items, setItems] = useState(ITEMS);
+
+  const handleDragEnd = useCallback(({ source, destination }) => {
+    setItems(oldItems => {
+      const newItems = oldItems.slice(); // Duplicate
+      const [temp] = newItems.splice(source.index, 1);
+      newItems.splice(destination.index, 0, temp);
+      return newItems;
+    });
+  }, []);
+
+  return (
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <Droppable droppableId="root">
+        {provided => {
+          return (
+            <div ref={provided.innerRef} {...provided.droppableProps}>
+              {items.map((item, index) => (
+                <ListItem
+                  key={item.id}
+                  id={item.id}
+                  index={index}
+                  title={item.title}
+                />
+              ))}
+              {provided.placeholder}
+            </div>
+          );
+        }}
+      </Droppable>
+    </DragDropContext>
+  );
+}
 
 function App() {
   const [shadowColor, setShadowColor] = useState("#000000");
@@ -121,6 +216,12 @@ function App() {
                   />
                 </FormLayout>
               </Card>
+              <Card sectioned>
+                <Button>Add Layer</Button>
+                <br/>
+                <br/>
+                <Lists/>
+              </Card>
             </Layout.Section>
             <Layout.Section oneHalf>
               <Card sectioned title="Preview">
@@ -158,6 +259,14 @@ function App() {
                     box-shadow: {getColor(shadowColor, rangeOpacity)} {rangeHorizontal}px {rangeVertical}px {rangeBlur}px {rangeSpread}px {checked && "inset"}
                   </code>
                 </pre>
+              </Card>
+              <Card sectioned title="Template">
+                <div className='template'>
+                  <div className='template__global template__1'>
+                  </div>
+                  <div className='template__global template__2'>
+                  </div>
+                </div>
               </Card>
             </Layout.Section>
           </Layout>
