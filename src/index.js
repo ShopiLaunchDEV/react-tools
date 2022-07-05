@@ -60,14 +60,11 @@ function App() {
   }
 
   let boxShadowValue = `${checked ? "inset" : ""} ${getColor(shadowColor, rangeOpacity)} ${rangeHorizontal}px ${rangeVertical}px ${rangeBlur}px ${rangeSpread}px`;
-  const addShadow = (boxShadowValue) => {
-    boxShadowValue += `,`; 
-    boxShadowValue += boxShadowValue;
-    if (boxShadowValue.substr(boxShadowValue.length - 1, boxShadowValue.length) == ",") {
-      boxShadowValue = boxShadowValue.substr(0, boxShadowValue.length - 1);
-    }
-    return boxShadowValue;
-  }
+
+  const [layer, addLayer] = useState([boxShadowValue]);
+  const handleAddLayer = () => {
+    addLayer(current => [...current, ','+boxShadowValue]);
+  };
 
   return (
     <div>
@@ -133,7 +130,7 @@ function App() {
                 </FormLayout>
               </Card>
               <Card sectioned>
-                <Button onClick={addShadow(boxShadowValue)}>Add Layer</Button>
+                <Button onClick={handleAddLayer}>Add Layer</Button>
                 <br/>
                 <br/>
                 <div className='layer_item'>
@@ -173,7 +170,7 @@ function App() {
                     }}>
                   <div className='preview-box' style={{
                     background: `${previewBoxColor}`,
-                    boxShadow: `${boxShadowValue}`
+                    boxShadow: `${layer}`
                   }}>
                   </div>
                 </div>
@@ -181,7 +178,7 @@ function App() {
               <Card sectioned title="CSS code">
                 <pre>
                   <code>
-                    box-shadow: {addShadow(boxShadowValue)};
+                    box-shadow:{layer};
                   </code>
                 </pre>
               </Card>
