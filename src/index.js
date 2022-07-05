@@ -3,102 +3,8 @@ import { render } from 'react-dom';
 
 import {AppProvider,Page,Layout,Card,FormLayout,RangeSlider,Checkbox,Button,Icon} from '@shopify/polaris';
 import { DragHandleMinor, DeleteMajor, EditMajor } from "@shopify/polaris-icons";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import '@shopify/polaris//build/esm/styles.css';
 import './index.css';
-
-const ITEMS = [
-  {
-    id: "1",
-    title: "Example list item"
-  },
-  {
-    id: "2",
-    title: "Example list item"
-  },
-  {
-    id: "3",
-    title: "Example list item"
-  },
-  {
-    id: "4",
-    title: "Example list item"
-  },
-  {
-    id: "5",
-    title: "Example list item"
-  }
-];
-
-function ListItem(props) {
-  const { id, index, title } = props;
-
-  return (
-    <Draggable draggableId={id} index={index}>
-      {(provided, snapshot) => {
-        return (
-          <div
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            style={
-              snapshot.isDragging
-                ? { background: "#5c6ac4", color: "#ffffff", ...provided.draggableProps.style }
-                : provided.draggableProps.style
-            }
-          >
-            <div className='layer_item' id={id} {...provided.dragHandleProps}>
-              <span className='icon_drag'>
-                  <Icon source={DragHandleMinor}/>
-              </span>
-              {title}
-              <span className='icon_edit'>
-                <Icon source={EditMajor}/>
-              </span>
-              <span className='icon_del'>
-                <Icon source={DeleteMajor}/>
-              </span>
-            </div>
-          </div>
-        );
-      }}
-    </Draggable>
-  );
-}
-
-function Lists() {
-  const [items, setItems] = useState(ITEMS);
-
-  const handleDragEnd = useCallback(({ source, destination }) => {
-    setItems(oldItems => {
-      const newItems = oldItems.slice(); // Duplicate
-      const [temp] = newItems.splice(source.index, 1);
-      newItems.splice(destination.index, 0, temp);
-      return newItems;
-    });
-  }, []);
-
-  return (
-    <DragDropContext onDragEnd={handleDragEnd}>
-      <Droppable droppableId="root">
-        {provided => {
-          return (
-            <div ref={provided.innerRef} {...provided.droppableProps}>
-              {items.map((item, index) => (
-                <ListItem
-                  key={item.id}
-                  id={item.id}
-                  index={index}
-                  title={item.title}
-                />
-              ))}
-              {provided.placeholder}
-            </div>
-          );
-        }}
-      </Droppable>
-    </DragDropContext>
-  );
-}
 
 function App() {
   const [shadowColor, setShadowColor] = useState("#000000");
@@ -139,18 +45,25 @@ function App() {
   const handleCheckBoxChange = useCallback((newChecked) => setChecked(newChecked), []);
 
   const getColor = (shadowColor, rangeOpacity) => {
-    var rgb = hexToRgb(shadowColor);
-    var rgbString = "rgba(" + rgb.r + "," + rgb.g + "," + rgb.b + "," + rangeOpacity + ")";
+    const rgb = hexToRgb(shadowColor);
+    const rgbString = "rgba(" + rgb.r + "," + rgb.g + "," + rgb.b + "," + rangeOpacity + ")";
     return rgbString;
   }
   
   const hexToRgb = (shadowColor) => {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(shadowColor);
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(shadowColor);
     return result ? {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
         b: parseInt(result[3], 16)
     } : null;
+  }
+
+  let boxShadowValue = `${checked ? "inset" : ""} ${getColor(shadowColor, rangeOpacity)} ${rangeHorizontal}px ${rangeVertical}px ${rangeBlur}px ${rangeSpread}px`;
+  const addShadow = (boxShadowValue) => {
+    boxShadowValue += `,`; 
+    boxShadowValue += boxShadowValue;
+    return boxShadowValue;
   }
 
   return (
@@ -217,10 +130,21 @@ function App() {
                 </FormLayout>
               </Card>
               <Card sectioned>
-                <Button>Add Layer</Button>
+                <Button onClick={addShadow(boxShadowValue)}>Add Layer</Button>
                 <br/>
                 <br/>
-                <Lists/>
+                <div className='layer_item'>
+                  <span className='icon_drag'>
+                      <Icon source={DragHandleMinor}/>
+                  </span>
+                  {boxShadowValue}
+                  <span className='icon_edit'>
+                    <Icon source={EditMajor}/>
+                  </span>
+                  <span className='icon_del'>
+                    <Icon source={DeleteMajor}/>
+                  </span>
+                </div>
               </Card>
             </Layout.Section>
             <Layout.Section oneHalf>
@@ -246,9 +170,7 @@ function App() {
                     }}>
                   <div className='preview-box' style={{
                     background: `${previewBoxColor}`,
-                    boxShadow: `${
-                      checked ? "inset" : ""
-                    } ${getColor(shadowColor, rangeOpacity)} ${rangeHorizontal}px ${rangeVertical}px ${rangeBlur}px ${rangeSpread}px`,
+                    boxShadow: `${boxShadowValue}`
                   }}>
                   </div>
                 </div>
@@ -256,7 +178,7 @@ function App() {
               <Card sectioned title="CSS code">
                 <pre>
                   <code>
-                    box-shadow: {getColor(shadowColor, rangeOpacity)} {rangeHorizontal}px {rangeVertical}px {rangeBlur}px {rangeSpread}px {checked && "inset"}
+                    box-shadow: {boxShadowValue};
                   </code>
                 </pre>
               </Card>
