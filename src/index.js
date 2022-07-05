@@ -63,6 +63,9 @@ function App() {
   const addShadow = (boxShadowValue) => {
     boxShadowValue += `,`; 
     boxShadowValue += boxShadowValue;
+    if (boxShadowValue.substr(boxShadowValue.length - 1, boxShadowValue.length) == ",") {
+      boxShadowValue = boxShadowValue.substr(0, boxShadowValue.length - 1);
+    }
     return boxShadowValue;
   }
 
@@ -178,7 +181,7 @@ function App() {
               <Card sectioned title="CSS code">
                 <pre>
                   <code>
-                    box-shadow: {boxShadowValue};
+                    box-shadow: {addShadow(boxShadowValue)};
                   </code>
                 </pre>
               </Card>
